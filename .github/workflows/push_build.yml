@@ -1,4 +1,4 @@
-name: Go
+name: On push build
 
 on:
   push:

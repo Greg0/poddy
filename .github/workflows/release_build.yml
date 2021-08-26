@@ -1,4 +1,4 @@
-name: GO TEST
+name: On release build
 
 on:
   release:
@@ -19,3 +19,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           goos: ${{ matrix.goos }}
           goarch: ${{ matrix.goarch }}
+          md5sum: false
