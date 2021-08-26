@@ -29,17 +29,11 @@ jobs:
             dep ensure
         fi
 
-    - name: Build Windows
-      run: make build-win
+    - name: Build
+      run: make build
 
-    - name: Build OSX
-      run: make build-osx
-
-    - name: Build LINUX
-      run: make build-lin
-      
     - name: Create artifacts
       uses: actions/upload-artifact@master
       with:
-        name: pepper-hunt-multi-os-build
+        name: poddy-build
         path: build
