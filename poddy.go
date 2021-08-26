@@ -54,6 +54,7 @@ func main() {
 		survey.AskOne(prompt, &dirToSave)
 
 		for _, podName := range selectedPods {
+			logFile := dirToSave + "/" + podName
 			cmd = exec.Command("kubectl", "logs", podName)
 			var out bytes.Buffer
 			var stderr bytes.Buffer
@@ -64,14 +65,15 @@ func main() {
 				fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
 				return
 			}
-
-			err = ioutil.WriteFile(dirToSave+"/"+podName, out.Bytes(), 0644)
+			err = ioutil.WriteFile(logFile, out.Bytes(), 0644)
 			check(err)
+
+			fmt.Println("[" + podName + "] - logs saved to " + logFile)
 		}
 	}
 }
 
-func ListDirectories(toComplete string) ([]string) {
+func ListDirectories(toComplete string) []string {
 	var directories []string
 	files, _ := filepath.Glob(toComplete + "*")
 
@@ -84,8 +86,6 @@ func ListDirectories(toComplete string) ([]string) {
 
 	return directories
 }
-
-
 
 func check(e error) {
 	if e != nil {
