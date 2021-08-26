@@ -1,4 +1,4 @@
-module podagra
+module poddy
 
 go 1.16
 

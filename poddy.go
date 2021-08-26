@@ -46,9 +46,9 @@ func main() {
 	}
 
 	if cmdType == "logs" {
-		dirToSave := ""
+		dirToSave := "logs"
 		prompt := &survey.Input{
-			Message: "inform a file to save:",
+			Message: "Choose dir to save logs:",
 			Suggest: ListDirectories,
 		}
 		survey.AskOne(prompt, &dirToSave)
