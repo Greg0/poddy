@@ -6,3 +6,5 @@ build-win:
 
 build-lin:
 	env GOOS=linux GOARCH=amd64 go build -o build/lin/poddy poddy.go
+
+build: build-lin build-osx build-win
