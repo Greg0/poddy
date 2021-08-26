@@ -37,7 +37,7 @@ func main() {
 	cmdType := ""
 	cmdTypePrompt := &survey.Select{
 		Message: "Choose command type:",
-		Options: []string{"logs"},
+		Options: []string{"logs", "exec"},
 	}
 	err = survey.AskOne(cmdTypePrompt, &cmdType)
 
@@ -46,31 +46,67 @@ func main() {
 	}
 
 	if cmdType == "logs" {
-		dirToSave := "logs"
-		prompt := &survey.Input{
-			Message: "Choose dir to save logs:",
-			Suggest: ListDirectories,
-		}
-		survey.AskOne(prompt, &dirToSave)
-
-		for _, podName := range selectedPods {
-			logFile := dirToSave + "/" + podName
-			cmd = exec.Command("kubectl", "logs", podName)
-			var out bytes.Buffer
-			var stderr bytes.Buffer
-			cmd.Stdout = &out
-			cmd.Stderr = &stderr
-			err := cmd.Run()
-			if err != nil {
-				fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
-				return
-			}
-			err = ioutil.WriteFile(logFile, out.Bytes(), 0644)
-			check(err)
-
-			fmt.Println("[" + podName + "] - logs saved to " + logFile)
+		if saveLogs(selectedPods, cmd) {
+			return
 		}
 	}
+	if cmdType == "exec" {
+		runCommandOnPod(selectedPods, cmd)
+	}
+}
+
+func runCommandOnPod(selectedPods []string, cmd *exec.Cmd) {
+	commandToRun := "ls -l"
+	prompt := &survey.Input{
+		Message: "Enter command:",
+		Default: commandToRun,
+	}
+	survey.AskOne(prompt, &commandToRun)
+	commandToExec := ""
+	for _, podName := range selectedPods {
+		commandToExec = "kubectl exec " + podName + " -- " + commandToRun
+		splitCommand := strings.Split(commandToExec, " ")
+		cmd = exec.Command(splitCommand[0], splitCommand[1:]...)
+		var out bytes.Buffer
+		var stderr bytes.Buffer
+		cmd.Stdout = &out
+		cmd.Stderr = &stderr
+		err := cmd.Run()
+		fmt.Println("[" + podName + "]")
+		if err != nil {
+			fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		}
+		fmt.Println(out.String())
+		fmt.Println("")
+	}
+}
+
+func saveLogs(selectedPods []string, cmd *exec.Cmd) bool {
+	dirToSave := "logs"
+	prompt := &survey.Input{
+		Message: "Choose dir to save logs:",
+		Suggest: ListDirectories,
+	}
+	survey.AskOne(prompt, &dirToSave)
+
+	for _, podName := range selectedPods {
+		logFile := dirToSave + "/" + podName
+		cmd = exec.Command("kubectl", "logs", podName)
+		var out bytes.Buffer
+		var stderr bytes.Buffer
+		cmd.Stdout = &out
+		cmd.Stderr = &stderr
+		err := cmd.Run()
+		if err != nil {
+			fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+			return true
+		}
+		err = ioutil.WriteFile(logFile, out.Bytes(), 0644)
+		check(err)
+
+		fmt.Println("[" + podName + "] - logs saved to " + logFile)
+	}
+	return false
 }
 
 func ListDirectories(toComplete string) []string {
