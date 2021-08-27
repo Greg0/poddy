@@ -121,11 +121,16 @@ func saveLogs(selectedPods []string, cmd *exec.Cmd) bool {
 	prompt := &survey.Input{
 		Message: "Choose dir to save logs:",
 		Suggest: ListDirectories,
+		Default: dirToSave,
 	}
 	survey.AskOne(prompt, &dirToSave)
 
 	for _, podName := range selectedPods {
 		logFile := dirToSave + "/" + podName
+		if _, err := os.Stat(dirToSave); os.IsNotExist(err) {
+			err := os.Mkdir(dirToSave, 0755)
+			check(err)
+		}
 		cmd = exec.Command("kubectl", "logs", podName)
 		var out bytes.Buffer
 		var stderr bytes.Buffer
