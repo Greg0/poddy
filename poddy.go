@@ -37,7 +37,7 @@ func main() {
 	cmdType := ""
 	cmdTypePrompt := &survey.Select{
 		Message: "Choose action:",
-		Options: []string{"logs", "exec", "fileUpload"},
+		Options: []string{"logs", "exec", "fileUpload", "fileDownload"},
 	}
 	err = survey.AskOne(cmdTypePrompt, &cmdType)
 
@@ -55,6 +55,43 @@ func main() {
 	}
 	if cmdType == "fileUpload" {
 		uploadFile(selectedPods, cmd)
+	}
+	if cmdType == "fileDownload" {
+		downloadFile(selectedPods, cmd)
+	}
+}
+
+func downloadFile(selectedPods []string, cmd *exec.Cmd) {
+	targetLocation := "/"
+	sourceFile := ""
+	prompt := &survey.Input{
+		Message: "Remote file path:",
+		Default: sourceFile,
+	}
+	survey.AskOne(prompt, &sourceFile)
+
+	prompt = &survey.Input{
+		Message: "Target dir:",
+		Suggest: ListDirectories,
+	}
+	survey.AskOne(prompt, &targetLocation)
+	targetFilename := filepath.Base(sourceFile)
+
+	for _, podName := range selectedPods {
+		target := targetLocation + "/" + podName + "/" + targetFilename
+		commandToExec := "kubectl cp " + podName + ":" + sourceFile + " " + target
+		splitCommand := strings.Split(commandToExec, " ")
+		cmd = exec.Command(splitCommand[0], splitCommand[1:]...)
+		var out bytes.Buffer
+		var stderr bytes.Buffer
+		cmd.Stdout = &out
+		cmd.Stderr = &stderr
+		err := cmd.Run()
+		fmt.Println("[" + podName + "]")
+		if err != nil {
+			fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		}
+		fmt.Println("File " + sourceFile + " successfully downloaded to " + target)
 	}
 }
 
