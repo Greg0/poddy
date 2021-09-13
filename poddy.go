@@ -90,8 +90,9 @@ func downloadFile(selectedPods []string, cmd *exec.Cmd) {
 		fmt.Println("[" + podName + "]")
 		if err != nil {
 			fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		} else {
+			fmt.Println("File " + sourceFile + " successfully downloaded to " + target)
 		}
-		fmt.Println("File " + sourceFile + " successfully downloaded to " + target)
 	}
 }
 
@@ -122,8 +123,9 @@ func uploadFile(selectedPods []string, cmd *exec.Cmd) {
 		fmt.Println("[" + podName + "]")
 		if err != nil {
 			fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		} else {
+			fmt.Println("File " + fileToUpload + " successfully uploaded to " + targetLocation)
 		}
-		fmt.Println("File " + fileToUpload + " successfully uploaded to " + targetLocation)
 	}
 }
 
@@ -147,9 +149,10 @@ func runCommandOnPod(selectedPods []string, cmd *exec.Cmd) {
 		fmt.Println("[" + podName + "]")
 		if err != nil {
 			fmt.Println(fmt.Sprint(err) + ": " + stderr.String())
+		} else {
+			fmt.Println(out.String())
+			fmt.Println("")
 		}
-		fmt.Println(out.String())
-		fmt.Println("")
 	}
 }
 
